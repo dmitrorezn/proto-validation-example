@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package svc.processor;
+package apis.processor;
 
 import "buf/validate/validate.proto";
 
 option go_package = "proto-validations-example/gen/processor;processor";
 
-service Processor {
+service ProcessorService {
   rpc Process(ProcessRequest) returns (ProcessResponse);
   rpc ProcessStream(stream ProcessRequest) returns (stream ProcessResponse);
   rpc Consume(ConsumeRequest) returns (stream ConsumeResponse);

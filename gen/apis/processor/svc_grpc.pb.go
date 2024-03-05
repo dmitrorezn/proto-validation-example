@@ -19,61 +19,61 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Processor_Process_FullMethodName       = "/svc.processor.Processor/Process"
-	Processor_ProcessStream_FullMethodName = "/svc.processor.Processor/ProcessStream"
-	Processor_Consume_FullMethodName       = "/svc.processor.Processor/Consume"
+	ProcessorService_Process_FullMethodName       = "/apis.processor.ProcessorService/Process"
+	ProcessorService_ProcessStream_FullMethodName = "/apis.processor.ProcessorService/ProcessStream"
+	ProcessorService_Consume_FullMethodName       = "/apis.processor.ProcessorService/Consume"
 )
 
-// ProcessorClient is the client API for Processor service.
+// ProcessorServiceClient is the client API for ProcessorService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ProcessorClient interface {
+type ProcessorServiceClient interface {
 	Process(ctx context.Context, in *ProcessRequest, opts ...grpc.CallOption) (*ProcessResponse, error)
-	ProcessStream(ctx context.Context, opts ...grpc.CallOption) (Processor_ProcessStreamClient, error)
-	Consume(ctx context.Context, in *ConsumeRequest, opts ...grpc.CallOption) (Processor_ConsumeClient, error)
+	ProcessStream(ctx context.Context, opts ...grpc.CallOption) (ProcessorService_ProcessStreamClient, error)
+	Consume(ctx context.Context, in *ConsumeRequest, opts ...grpc.CallOption) (ProcessorService_ConsumeClient, error)
 }
 
-type processorClient struct {
+type processorServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewProcessorClient(cc grpc.ClientConnInterface) ProcessorClient {
-	return &processorClient{cc}
+func NewProcessorServiceClient(cc grpc.ClientConnInterface) ProcessorServiceClient {
+	return &processorServiceClient{cc}
 }
 
-func (c *processorClient) Process(ctx context.Context, in *ProcessRequest, opts ...grpc.CallOption) (*ProcessResponse, error) {
+func (c *processorServiceClient) Process(ctx context.Context, in *ProcessRequest, opts ...grpc.CallOption) (*ProcessResponse, error) {
 	out := new(ProcessResponse)
-	err := c.cc.Invoke(ctx, Processor_Process_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, ProcessorService_Process_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *processorClient) ProcessStream(ctx context.Context, opts ...grpc.CallOption) (Processor_ProcessStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Processor_ServiceDesc.Streams[0], Processor_ProcessStream_FullMethodName, opts...)
+func (c *processorServiceClient) ProcessStream(ctx context.Context, opts ...grpc.CallOption) (ProcessorService_ProcessStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ProcessorService_ServiceDesc.Streams[0], ProcessorService_ProcessStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &processorProcessStreamClient{stream}
+	x := &processorServiceProcessStreamClient{stream}
 	return x, nil
 }
 
-type Processor_ProcessStreamClient interface {
+type ProcessorService_ProcessStreamClient interface {
 	Send(*ProcessRequest) error
 	Recv() (*ProcessResponse, error)
 	grpc.ClientStream
 }
 
-type processorProcessStreamClient struct {
+type processorServiceProcessStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *processorProcessStreamClient) Send(m *ProcessRequest) error {
+func (x *processorServiceProcessStreamClient) Send(m *ProcessRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *processorProcessStreamClient) Recv() (*ProcessResponse, error) {
+func (x *processorServiceProcessStreamClient) Recv() (*ProcessResponse, error) {
 	m := new(ProcessResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -81,12 +81,12 @@ func (x *processorProcessStreamClient) Recv() (*ProcessResponse, error) {
 	return m, nil
 }
 
-func (c *processorClient) Consume(ctx context.Context, in *ConsumeRequest, opts ...grpc.CallOption) (Processor_ConsumeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Processor_ServiceDesc.Streams[1], Processor_Consume_FullMethodName, opts...)
+func (c *processorServiceClient) Consume(ctx context.Context, in *ConsumeRequest, opts ...grpc.CallOption) (ProcessorService_ConsumeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ProcessorService_ServiceDesc.Streams[1], ProcessorService_Consume_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &processorConsumeClient{stream}
+	x := &processorServiceConsumeClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -96,16 +96,16 @@ func (c *processorClient) Consume(ctx context.Context, in *ConsumeRequest, opts 
 	return x, nil
 }
 
-type Processor_ConsumeClient interface {
+type ProcessorService_ConsumeClient interface {
 	Recv() (*ConsumeResponse, error)
 	grpc.ClientStream
 }
 
-type processorConsumeClient struct {
+type processorServiceConsumeClient struct {
 	grpc.ClientStream
 }
 
-func (x *processorConsumeClient) Recv() (*ConsumeResponse, error) {
+func (x *processorServiceConsumeClient) Recv() (*ConsumeResponse, error) {
 	m := new(ConsumeResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -113,79 +113,79 @@ func (x *processorConsumeClient) Recv() (*ConsumeResponse, error) {
 	return m, nil
 }
 
-// ProcessorServer is the server API for Processor service.
-// All implementations must embed UnimplementedProcessorServer
+// ProcessorServiceServer is the server API for ProcessorService service.
+// All implementations must embed UnimplementedProcessorServiceServer
 // for forward compatibility
-type ProcessorServer interface {
+type ProcessorServiceServer interface {
 	Process(context.Context, *ProcessRequest) (*ProcessResponse, error)
-	ProcessStream(Processor_ProcessStreamServer) error
-	Consume(*ConsumeRequest, Processor_ConsumeServer) error
-	mustEmbedUnimplementedProcessorServer()
+	ProcessStream(ProcessorService_ProcessStreamServer) error
+	Consume(*ConsumeRequest, ProcessorService_ConsumeServer) error
+	mustEmbedUnimplementedProcessorServiceServer()
 }
 
-// UnimplementedProcessorServer must be embedded to have forward compatible implementations.
-type UnimplementedProcessorServer struct {
+// UnimplementedProcessorServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedProcessorServiceServer struct {
 }
 
-func (UnimplementedProcessorServer) Process(context.Context, *ProcessRequest) (*ProcessResponse, error) {
+func (UnimplementedProcessorServiceServer) Process(context.Context, *ProcessRequest) (*ProcessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Process not implemented")
 }
-func (UnimplementedProcessorServer) ProcessStream(Processor_ProcessStreamServer) error {
+func (UnimplementedProcessorServiceServer) ProcessStream(ProcessorService_ProcessStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method ProcessStream not implemented")
 }
-func (UnimplementedProcessorServer) Consume(*ConsumeRequest, Processor_ConsumeServer) error {
+func (UnimplementedProcessorServiceServer) Consume(*ConsumeRequest, ProcessorService_ConsumeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Consume not implemented")
 }
-func (UnimplementedProcessorServer) mustEmbedUnimplementedProcessorServer() {}
+func (UnimplementedProcessorServiceServer) mustEmbedUnimplementedProcessorServiceServer() {}
 
-// UnsafeProcessorServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ProcessorServer will
+// UnsafeProcessorServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ProcessorServiceServer will
 // result in compilation errors.
-type UnsafeProcessorServer interface {
-	mustEmbedUnimplementedProcessorServer()
+type UnsafeProcessorServiceServer interface {
+	mustEmbedUnimplementedProcessorServiceServer()
 }
 
-func RegisterProcessorServer(s grpc.ServiceRegistrar, srv ProcessorServer) {
-	s.RegisterService(&Processor_ServiceDesc, srv)
+func RegisterProcessorServiceServer(s grpc.ServiceRegistrar, srv ProcessorServiceServer) {
+	s.RegisterService(&ProcessorService_ServiceDesc, srv)
 }
 
-func _Processor_Process_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ProcessorService_Process_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProcessRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProcessorServer).Process(ctx, in)
+		return srv.(ProcessorServiceServer).Process(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Processor_Process_FullMethodName,
+		FullMethod: ProcessorService_Process_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProcessorServer).Process(ctx, req.(*ProcessRequest))
+		return srv.(ProcessorServiceServer).Process(ctx, req.(*ProcessRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Processor_ProcessStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ProcessorServer).ProcessStream(&processorProcessStreamServer{stream})
+func _ProcessorService_ProcessStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ProcessorServiceServer).ProcessStream(&processorServiceProcessStreamServer{stream})
 }
 
-type Processor_ProcessStreamServer interface {
+type ProcessorService_ProcessStreamServer interface {
 	Send(*ProcessResponse) error
 	Recv() (*ProcessRequest, error)
 	grpc.ServerStream
 }
 
-type processorProcessStreamServer struct {
+type processorServiceProcessStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *processorProcessStreamServer) Send(m *ProcessResponse) error {
+func (x *processorServiceProcessStreamServer) Send(m *ProcessResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *processorProcessStreamServer) Recv() (*ProcessRequest, error) {
+func (x *processorServiceProcessStreamServer) Recv() (*ProcessRequest, error) {
 	m := new(ProcessRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -193,49 +193,49 @@ func (x *processorProcessStreamServer) Recv() (*ProcessRequest, error) {
 	return m, nil
 }
 
-func _Processor_Consume_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ProcessorService_Consume_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ConsumeRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ProcessorServer).Consume(m, &processorConsumeServer{stream})
+	return srv.(ProcessorServiceServer).Consume(m, &processorServiceConsumeServer{stream})
 }
 
-type Processor_ConsumeServer interface {
+type ProcessorService_ConsumeServer interface {
 	Send(*ConsumeResponse) error
 	grpc.ServerStream
 }
 
-type processorConsumeServer struct {
+type processorServiceConsumeServer struct {
 	grpc.ServerStream
 }
 
-func (x *processorConsumeServer) Send(m *ConsumeResponse) error {
+func (x *processorServiceConsumeServer) Send(m *ConsumeResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-// Processor_ServiceDesc is the grpc.ServiceDesc for Processor service.
+// ProcessorService_ServiceDesc is the grpc.ServiceDesc for ProcessorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Processor_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "svc.processor.Processor",
-	HandlerType: (*ProcessorServer)(nil),
+var ProcessorService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "apis.processor.ProcessorService",
+	HandlerType: (*ProcessorServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Process",
-			Handler:    _Processor_Process_Handler,
+			Handler:    _ProcessorService_Process_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ProcessStream",
-			Handler:       _Processor_ProcessStream_Handler,
+			Handler:       _ProcessorService_ProcessStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
 			StreamName:    "Consume",
-			Handler:       _Processor_Consume_Handler,
+			Handler:       _ProcessorService_Consume_Handler,
 			ServerStreams: true,
 		},
 	},

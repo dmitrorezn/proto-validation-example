@@ -59,10 +59,10 @@ func main() {
 	defer slog.Info("STOPPED")
 }
 
-var _ processor.ProcessorServer = (*processorSvc)(nil)
+var _ processor.ProcessorServiceServer = (*processorSvc)(nil)
 
 type processorSvc struct {
-	processor.UnimplementedProcessorServer
+	processor.UnimplementedProcessorServiceServer
 
 	ctx        context.Context
 	mu         sync.RWMutex

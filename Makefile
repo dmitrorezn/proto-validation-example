@@ -1,14 +1,13 @@
-
 deps:
 	rm -f ./build/bin/buf
 	curl -fsSL "https://github.com/bufbuild/buf/releases/download/v1.26.1/buf-$(shell uname -s)-$(shell uname -m)" -o ./build/bin/buf --create-dirs
 	chmod +x ./build/bin/buf
 
-add_tools:
+tools:
 	chmod +x ./build/bin
 	go install github.com/bufbuild/buf/cmd/buf@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install	google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	chmod +x ./build/bin/buf
 	chmod +x ./build/bin/protoc-gen-go-grpc
 	chmod +x ./build/bin/protoc-gen-go
