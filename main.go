@@ -13,6 +13,7 @@ import (
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/dmitrorezn/proto-validation-example/gen/apis/processor"
@@ -49,14 +50,24 @@ func main() {
 		panic(err)
 	}
 	server := grpc.NewServer()
-	processor.RegisterProcessorServer(server, service)
-	defer server.GracefulStop()
+	processor.RegisterProcessorServiceServer(server, service)
 
-	if err = server.Serve(lis); err != nil {
+	gr, ctx := errgroup.WithContext(ctx)
+	gr.Go(func() error {
+		return server.Serve(lis)
+	})
+	gr.Go(func() error {
+		<-ctx.Done()
+		server.GracefulStop()
+
+		return nil
+	})
+	slog.Info("STARTED")
+	defer slog.Info("STOPPED")
+
+	if err = gr.Wait(); err != nil {
 		panic(err)
 	}
-	<-ctx.Done()
-	defer slog.Info("STOPPED")
 }
 
 var _ processor.ProcessorServiceServer = (*processorSvc)(nil)
@@ -121,7 +132,7 @@ func (r *replicator[T]) produce(item T) chan struct{} {
 	return wait
 }
 
-func (p *processorSvc) Consume(_ *processor.ConsumeRequest, server processor.Processor_ConsumeServer) error {
+func (p *processorSvc) Consume(_ *processor.ConsumeRequest, server processor.ProcessorService_ConsumeServer) error {
 	for {
 		select {
 		case id := <-p.replicator.consume():
@@ -153,7 +164,7 @@ func newProcessorSvc(ctx context.Context) (*processorSvc, error) {
 	}, nil
 }
 
-func (p *processorSvc) ProcessStream(server processor.Processor_ProcessStreamServer) error {
+func (p *processorSvc) ProcessStream(server processor.ProcessorService_ProcessStreamServer) error {
 	ctx := server.Context()
 
 	var response *processor.ProcessResponse

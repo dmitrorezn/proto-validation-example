@@ -29,3 +29,9 @@ breaking: update build
 
 lint:
 	@./build/bin/buf lint
+
+build:
+	go build .
+
+run:
+	go run .
