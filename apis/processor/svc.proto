@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package svc.processor;
+
+import "buf/validate/validate.proto";
+
+option go_package = "proto-validations-example/gen/processor;processor";
+
+service Processor {
+  rpc Process(ProcessRequest) returns (ProcessResponse);
+  rpc ProcessStream(stream ProcessRequest) returns (stream ProcessResponse);
+  rpc Consume(ConsumeRequest) returns (stream ConsumeResponse);
+}
+
+message ProcessRequest {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ProcessResponse {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ConsumeRequest {}
+
+message ConsumeResponse {
+  string id = 1;
+}
+

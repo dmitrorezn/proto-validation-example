@@ -1,0 +1,17 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: .
+    except:
+        - buf.build/bufbuild/protovalidate
+        - buf.build/protocolbuffers/go:v1.31.0
+plugins:
+  - plugin: buf.build/bufbuild/validate-go
+    out: gen
+    opt: paths=source_relative
+  - plugin: buf.build/protocolbuffers/go:v1.31.0
+    out: gen
+  - name: go-grpc
+    out: gen
+    opt: paths=source_relative
