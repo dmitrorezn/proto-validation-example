@@ -49,25 +49,24 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	gr, ctx := errgroup.WithContext(ctx)
+	defer func() {
+		if err = gr.Wait(); err != nil {
+			panic(err)
+		}
+	}()
+
 	server := grpc.NewServer()
+	defer server.GracefulStop()
 	processor.RegisterProcessorServiceServer(server, service)
 
-	gr, ctx := errgroup.WithContext(ctx)
 	gr.Go(func() error {
 		return server.Serve(lis)
 	})
-	gr.Go(func() error {
-		<-ctx.Done()
-		server.GracefulStop()
 
-		return nil
-	})
 	slog.Info("STARTED")
 	defer slog.Info("STOPPED")
-
-	if err = gr.Wait(); err != nil {
-		panic(err)
-	}
+	<-ctx.Done()
 }
 
 var _ processor.ProcessorServiceServer = (*processorSvc)(nil)
