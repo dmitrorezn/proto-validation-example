@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/dmitrorezn/proto-validation-example/gen/apis/processor"
 	"github.com/stretchr/testify/assert"
@@ -24,8 +25,11 @@ func TestProcessorSvc_Process(t *testing.T) {
 
 	verr := &protovalidate.ValidationError{}
 	assert.True(t, errors.As(err, &verr))
+	fmt.Println("verr", verr)
 
-	assert.Len(t, verr.Violations, 1)
+	if assert.Len(t, verr.Violations, 1) {
+		assert.Equal(t, verr.Violations[0].Message, "name: value length must be at least 1 characters [string.min_len]")
+	}
 
 	request = processor.ProcessRequest{
 		Name: "Test",
