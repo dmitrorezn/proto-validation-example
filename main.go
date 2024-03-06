@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/bufbuild/protovalidate-go"
+	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"io"
 	"log/slog"
 	"net"
@@ -9,12 +13,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
-
-	"github.com/bufbuild/protovalidate-go"
-	"github.com/google/uuid"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 
 	"github.com/dmitrorezn/proto-validation-example/gen/apis/processor"
 )
@@ -81,56 +79,6 @@ type processorSvc struct {
 	replicator *replicator[uuid.UUID]
 }
 
-type replicator[T any] struct {
-	sync.Mutex
-	consumers []chan T
-	c         chan T
-}
-
-func newReplicator[T any](ctx context.Context) *replicator[T] {
-	r := &replicator[T]{
-		consumers: make([]chan T, 0),
-		c:         make(chan T),
-	}
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case item := <-r.c:
-				for _, consumer := range r.consumers {
-					select {
-					case consumer <- item:
-					case <-time.After(10 * time.Millisecond):
-						continue
-					}
-				}
-			}
-		}
-	}()
-
-	return r
-}
-
-func (r *replicator[T]) consume() chan T {
-	consumer := make(chan T)
-
-	defer lockUnlock(r)
-	r.consumers = append(r.consumers, consumer)
-
-	return consumer
-}
-
-func (r *replicator[T]) produce(item T) chan struct{} {
-	wait := make(chan struct{})
-	go func() {
-		defer close(wait)
-		r.c <- item
-	}()
-
-	return wait
-}
-
 func (p *processorSvc) Consume(_ *processor.ConsumeRequest, server processor.ProcessorService_ConsumeServer) error {
 	for {
 		select {
@@ -148,7 +96,7 @@ func (p *processorSvc) Consume(_ *processor.ConsumeRequest, server processor.Pro
 
 func newProcessorSvc(ctx context.Context) (*processorSvc, error) {
 	validator, err := protovalidate.New(
-		protovalidate.WithMessages(
+		protovalidate.WithMessages( //  to warm up validator
 			new(processor.ProcessRequest),
 		),
 	)
@@ -199,15 +147,20 @@ func (p *processorSvc) putName(ctx context.Context, name string) (uuid.UUID, err
 	return id, nil
 }
 
-func (p *processorSvc) Process(ctx context.Context, request *processor.ProcessRequest) (*processor.ProcessResponse, error) {
-	if err := p.validation.Validate(request); err != nil {
+func (p *processorSvc) Process(ctx context.Context, request *processor.ProcessRequest) (response *processor.ProcessResponse, err error) {
+	if err = p.validation.Validate(request); err != nil {
 		return nil, err
 	}
 	id, err := p.putName(ctx, request.Name)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
-	return &processor.ProcessResponse{
+	response = &processor.ProcessResponse{
 		Id: id.String(),
-	}, nil
+	}
+	if err = p.validation.Validate(response); err != nil {
+		return response, err
+	}
+
+	return response, err
 }
