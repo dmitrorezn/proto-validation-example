@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -17,6 +18,7 @@ func newReplicator[T any](ctx context.Context) *replicator[T] {
 		consumers: make([]chan T, 0),
 		c:         make(chan T),
 	}
+
 	go func() {
 		for {
 			select {
@@ -24,6 +26,7 @@ func newReplicator[T any](ctx context.Context) *replicator[T] {
 				return
 			case item := <-r.c:
 				for _, consumer := range r.consumers {
+					fmt.Println("item", item)
 					select {
 					case consumer <- item:
 					case <-time.After(10 * time.Millisecond):

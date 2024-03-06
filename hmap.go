@@ -26,16 +26,16 @@ type safehmap[K comparable, V any] struct {
 func (m *safehmap[K, V]) Put(key K, val V) {
 	defer lockUnlock(m)()
 
-	m.Put(key, val)
+	m.hmap.Put(key, val)
 }
 func (m *safehmap[K, V]) Del(key K) {
 	defer lockUnlock(m)()
 
-	m.Del(key)
+	m.hmap.Del(key)
 }
 func (m *safehmap[K, V]) Get(key K) (V, bool) {
 	defer lockUnlock(m.RLocker())()
-	v, ok := m.Get(key)
+	v, ok := m.hmap.Get(key)
 
 	return v, ok
 }

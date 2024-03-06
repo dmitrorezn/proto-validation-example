@@ -103,6 +103,7 @@ func newProcessorSvc(ctx context.Context) (*processorSvc, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &processorSvc{
 		ctx:        ctx,
 		replicator: newReplicator[uuid.UUID](ctx),
@@ -136,6 +137,7 @@ func (p *processorSvc) ProcessStream(server processor.ProcessorService_ProcessSt
 
 func (p *processorSvc) putName(ctx context.Context, name string) (uuid.UUID, error) {
 	id := uuid.New()
+
 	p.cache.Put(id, name)
 
 	select {
